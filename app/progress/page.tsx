@@ -36,12 +36,12 @@ export default function ProgressPage() {
           <p className="label">Hear the difference</p>
           <div className="row-card column">
             <span className="small"><strong>Your first clip</strong> · {formatDay(first.day)}</span>
-            <ClipPlayer audio={first.audio} label="Your first clip" />
+            <ClipPlayer audio={first.audio} durationMs={first.durationMs} label="Your first clip" />
           </div>
           {latest && latest.id !== first.id && (
             <div className="row-card column">
               <span className="small"><strong>Your latest</strong> · {formatDay(latest.day)}</span>
-              <ClipPlayer audio={latest.audio} label="Your latest clip" />
+              <ClipPlayer audio={latest.audio} durationMs={latest.durationMs} label="Your latest clip" />
             </div>
           )}
         </section>
@@ -58,7 +58,7 @@ export default function ProgressPage() {
                 <span className="small muted">
                   {clip.kind === 'first' ? 'First clip' : 'Answer'} · {formatDay(clip.day)} · {formatDuration(clip.durationMs)}
                 </span>
-                <ClipPlayer audio={clip.audio} label="Clip" />
+                <ClipPlayer audio={clip.audio} durationMs={clip.durationMs} label="Clip" />
                 <button
                   className="link danger"
                   onClick={async () => {

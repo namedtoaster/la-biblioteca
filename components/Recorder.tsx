@@ -48,7 +48,7 @@ export function Recorder({ idleHint, saveLabel, onSave, secondaryLabel, onSecond
         )}
         {state === 'done' && take && (
           <div className="stack full">
-            <ClipPlayer audio={take.blob} label={`Take ${takes}`} />
+            <ClipPlayer audio={take.blob} durationMs={take.durationMs} label={`Take ${takes}`} />
             <p className="muted center small">
               Take {takes} · {formatDuration(take.durationMs)} · only you can hear this
             </p>

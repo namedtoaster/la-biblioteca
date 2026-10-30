@@ -80,7 +80,7 @@ export function DayView({ day, isToday }: Props) {
           <p className="label">Your answers</p>
           {answers.map((clip, i) => (
             <div key={clip.id} className="row-card">
-              <ClipPlayer audio={clip.audio} label={`Your answer ${i + 1}`} />
+              <ClipPlayer audio={clip.audio} durationMs={clip.durationMs} label={`Your answer ${i + 1}`} />
               <span className="muted small">{formatDuration(clip.durationMs)}</span>
             </div>
           ))}
