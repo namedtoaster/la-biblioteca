@@ -12,6 +12,7 @@ export function SignInForm({ canSend = () => true, onSignedIn }: Props) {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'email' | 'code' | 'done'>('email');
+  const [showCode, setShowCode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,10 +52,17 @@ export function SignInForm({ canSend = () => true, onSignedIn }: Props) {
           }
         }}
       >
-        <div className="note" role="status">
+        <div className="note good" role="status">
           <strong>Check your email</strong>
-          <span>We sent a code to {email}. Type it here, or tap the link in the email.</span>
+          <span>We sent a sign-in link to {email}. Tap it and you&apos;re in. It can take a minute to arrive.</span>
         </div>
+        {!showCode && (
+          <button className="link" type="button" onClick={() => setShowCode(true)}>
+            Got a code instead?
+          </button>
+        )}
+        {showCode && (
+        <>
         <label className="field">
           <span>Code from the email</span>
           <input
@@ -72,8 +80,10 @@ export function SignInForm({ canSend = () => true, onSignedIn }: Props) {
         <button className="button primary big" type="submit" disabled={busy}>
           {busy ? 'Checking...' : 'Sign in'}
         </button>
+        </>
+        )}
         <button className="link" type="button" disabled={busy} onClick={send}>
-          Send a new code
+          Send a new link
         </button>
         <button className="link back" type="button" onClick={() => { setStep('email'); setCode(''); setError(null); }}>
           Use a different email
@@ -104,7 +114,7 @@ export function SignInForm({ canSend = () => true, onSignedIn }: Props) {
       </label>
       {error && <p className="warn" role="alert">{error}</p>}
       <button className="button primary big" type="submit" disabled={busy}>
-        {busy ? 'Sending...' : 'Email me a sign-in code'}
+        {busy ? 'Sending...' : 'Email me a sign-in link'}
       </button>
     </form>
   );

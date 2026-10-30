@@ -1,7 +1,6 @@
 'use client';
 
-import { createBrowserClient } from '@supabase/ssr';
-import type { EmailOtpType, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type EmailOtpType, type SupabaseClient } from '@supabase/supabase-js';
 
 // Values come from the environment, never from the repo. Without them the app runs
 // with no accounts and keeps everything in the browser.
@@ -16,7 +15,11 @@ export function accountsEnabled(): boolean {
 
 export function supabase(): SupabaseClient | null {
   if (!url || !key) return null;
-  client ??= createBrowserClient(url, key);
+  // Implicit flow: the email link returns the session itself, so it works when opened
+  // from an email app, with Supabase's default email template and no saved verifier.
+  client ??= createClient(url, key, {
+    auth: { flowType: 'implicit', detectSessionInUrl: true, persistSession: true },
+  });
   return client;
 }
 
