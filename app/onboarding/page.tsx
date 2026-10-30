@@ -63,7 +63,7 @@ export default function OnboardingPage() {
         </div>
         <div className="step">
           <h1 className="title">Welcome back</h1>
-          <p className="muted">Enter the email you signed up with and we&apos;ll send you a sign-in link.</p>
+          <p className="muted">Enter the email you signed up with and we&apos;ll send you a sign-in code.</p>
           <SignInForm
             existingOnly
             onSignedIn={() => {

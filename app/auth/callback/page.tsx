@@ -37,7 +37,7 @@ export default function AuthCallbackPage() {
     <div className="note" role="alert">
       <strong>That sign-in link didn&apos;t work</strong>
       <span>{problem}</span>
-      <span>Each link works once. Send yourself a new one from the Progreso tab.</span>
+      <span>Each link works once. If you still have the app open where you asked, type the code from the same email there instead.</span>
     </div>
   ) : (
     <p className="muted">Signing you in...</p>

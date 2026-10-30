@@ -14,7 +14,6 @@ export function SignInForm({ canSend = () => true, onSignedIn, existingOnly = fa
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'email' | 'code' | 'done'>('email');
-  const [showCode, setShowCode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,15 +69,8 @@ export function SignInForm({ canSend = () => true, onSignedIn, existingOnly = fa
       >
         <div className="note good" role="status">
           <strong>Check your email</strong>
-          <span>We sent a sign-in link to {email}. Tap it and you&apos;re in. It can take a minute to arrive.</span>
+          <span>We sent a code and a link to {email}. Type the code here, or tap the link. It can take a minute to arrive.</span>
         </div>
-        {!showCode && (
-          <button className="link" type="button" onClick={() => setShowCode(true)}>
-            Got a code instead?
-          </button>
-        )}
-        {showCode && (
-        <>
         <label className="field">
           <span>Code from the email</span>
           <input
@@ -89,17 +81,17 @@ export function SignInForm({ canSend = () => true, onSignedIn, existingOnly = fa
             autoComplete="one-time-code"
             pattern="[0-9]{6,10}"
             maxLength={10}
-            placeholder="123456"
+            placeholder="Code"
+            aria-describedby="code-help"
           />
+          <span id="code-help" className="muted small">Your phone may offer to fill it in from the email.</span>
         </label>
         {error && <p className="warn" role="alert">{error}</p>}
-        <button className="button primary big" type="submit" disabled={busy}>
+        <button className="button primary big" type="submit" disabled={busy || code.length < 6}>
           {busy ? 'Checking...' : 'Sign in'}
         </button>
-        </>
-        )}
         <button className="link" type="button" disabled={busy} onClick={send}>
-          Send a new link
+          Send a new code
         </button>
         <button className="link back" type="button" onClick={() => { setStep('email'); setCode(''); setError(null); }}>
           Use a different email
@@ -130,7 +122,7 @@ export function SignInForm({ canSend = () => true, onSignedIn, existingOnly = fa
       </label>
       {error && <p className="warn" role="alert">{error}</p>}
       <button className="button primary big" type="submit" disabled={busy}>
-        {busy ? 'Sending...' : 'Email me a sign-in link'}
+        {busy ? 'Sending...' : 'Email me a sign-in code'}
       </button>
     </form>
   );
