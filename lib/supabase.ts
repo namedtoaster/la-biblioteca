@@ -23,12 +23,13 @@ export function supabase(): SupabaseClient | null {
   return client;
 }
 
-export async function sendSignInLink(email: string): Promise<string | null> {
+/** createUser false is for returning people: it refuses unknown emails, so new people go through onboarding. */
+export async function sendSignInLink(email: string, createUser = true): Promise<string | null> {
   const sb = supabase();
   if (!sb) return 'Accounts are not set up on this copy of the app.';
   const { error } = await sb.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    options: { emailRedirectTo: `${window.location.origin}/auth/callback`, shouldCreateUser: createUser },
   });
   return error ? friendly(error.message) : null;
 }
@@ -36,6 +37,7 @@ export async function sendSignInLink(email: string): Promise<string | null> {
 function friendly(message: string): string {
   if (/fetch|network/i.test(message)) return "Couldn't reach the sign-in service. Check your connection and try again.";
   if (/expired|invalid/i.test(message)) return 'That code or link has expired or was already used. Send a new one.';
+  if (/signups? not allowed/i.test(message)) return "There's no account with that email yet. Go back and tap Start to make one.";
   return message;
 }
 

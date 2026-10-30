@@ -21,6 +21,7 @@ const LEVELS: { label: string; level: Settings['level'] }[] = [
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [returning, setReturning] = useState(false);
   const [levelChoice, setLevelChoice] = useState(1);
   const [firstSaved, setFirstSaved] = useState(false);
   const [adult, setAdult] = useState(false);
@@ -36,6 +37,29 @@ export default function OnboardingPage() {
     writeSettings({ onboarded: true, adult: true, level: LEVELS[levelChoice].level });
     router.replace('/');
   };
+
+  if (returning) {
+    return (
+      <div className="onboarding">
+        <div className="progress-row">
+          <button className="icon-button" onClick={() => setReturning(false)} aria-label="Back">
+            ←
+          </button>
+        </div>
+        <div className="step">
+          <h1 className="title">Welcome back</h1>
+          <p className="muted">Enter the email you signed up with and we&apos;ll send you a sign-in link.</p>
+          <SignInForm
+            existingOnly
+            onSignedIn={() => {
+              writeSettings({ onboarded: true, adult: true });
+              router.replace('/');
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="onboarding">
@@ -57,7 +81,14 @@ export default function OnboardingPage() {
             <h1 className="hero">Speak Spanish out loud.</h1>
             <p className="lead">One question a day. Answer it by voice. Nobody hears you until you&apos;re ready.</p>
           </div>
-          <button className="button primary big" onClick={next}>Start</button>
+          <div className="stack tight">
+            <button className="button primary big" onClick={next}>Start</button>
+            {accountsEnabled() && (
+              <button className="button ghost" onClick={() => setReturning(true)}>
+                I already have an account
+              </button>
+            )}
+          </div>
         </div>
       )}
 

@@ -6,9 +6,11 @@ import { sendSignInLink, verifyCode } from '@/lib/supabase';
 type Props = {
   canSend?: () => boolean;
   onSignedIn?: () => void;
+  /** Only send links to emails that already have an account. */
+  existingOnly?: boolean;
 };
 
-export function SignInForm({ canSend = () => true, onSignedIn }: Props) {
+export function SignInForm({ canSend = () => true, onSignedIn, existingOnly = false }: Props) {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'email' | 'code' | 'done'>('email');
@@ -19,7 +21,7 @@ export function SignInForm({ canSend = () => true, onSignedIn }: Props) {
   const send = async () => {
     setBusy(true);
     setError(null);
-    const problem = await sendSignInLink(email.trim());
+    const problem = await sendSignInLink(email.trim(), !existingOnly);
     setBusy(false);
     if (problem) setError(problem);
     else setStep('code');
