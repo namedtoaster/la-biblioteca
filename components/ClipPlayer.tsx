@@ -31,6 +31,14 @@ export function ClipPlayer({ audio, durationMs, label }: Props) {
     const a = el.current;
     if (!a || !url) return;
     let fixing = false;
+    let giveUp: ReturnType<typeof setTimeout> | undefined;
+
+    const stopFixing = (rewind: boolean) => {
+      if (!fixing) return;
+      fixing = false;
+      clearTimeout(giveUp);
+      if (rewind) a.currentTime = 0;
+    };
 
     const onMetadata = () => {
       if (Number.isFinite(a.duration) && a.duration > 0) {
@@ -38,21 +46,28 @@ export function ClipPlayer({ audio, durationMs, label }: Props) {
         return;
       }
       // Recordings from MediaRecorder report an infinite duration until read to the end.
-      // Seeking far past the end makes the browser work it out, so the scrubber can seek.
+      // While paused, seeking far past the end makes the browser work it out so seeking works.
+      // Some browsers (iPhone Safari) only load a clip once play is pressed: then skip this,
+      // and the length measured while recording is used instead.
+      if (!a.paused) return;
       fixing = true;
       a.currentTime = 1e7;
+      giveUp = setTimeout(() => stopFixing(true), 1000);
     };
     const onDurationChange = () => {
-      if (fixing && Number.isFinite(a.duration)) {
-        fixing = false;
+      if (Number.isFinite(a.duration) && a.duration > 0) {
         setLength(a.duration);
-        a.currentTime = 0;
+        stopFixing(true);
       }
     };
     const onTime = () => {
       if (!fixing) setPosition(a.currentTime);
     };
-    const onPlay = () => setPlaying(true);
+    const onPlay = () => {
+      // Never let the length check interfere with playback.
+      stopFixing(true);
+      setPlaying(true);
+    };
     const onPause = () => setPlaying(false);
     const onEnded = () => {
       setPlaying(false);
@@ -67,6 +82,7 @@ export function ClipPlayer({ audio, durationMs, label }: Props) {
     a.addEventListener('pause', onPause);
     a.addEventListener('ended', onEnded);
     return () => {
+      clearTimeout(giveUp);
       a.removeEventListener('loadedmetadata', onMetadata);
       a.removeEventListener('durationchange', onDurationChange);
       a.removeEventListener('timeupdate', onTime);
