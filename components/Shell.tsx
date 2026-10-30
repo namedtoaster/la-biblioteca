@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ChartIcon, ListIcon, MicIcon } from './Icons';
 import { APP_NAME } from '@/lib/brand';
-import { readSettings } from '@/lib/store';
+import { canUseApp } from '@/lib/access';
 
 const TABS = [
   { href: '/', label: 'Hoy', icon: MicIcon },
@@ -21,11 +21,14 @@ export function Shell({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(onboarding);
 
   useEffect(() => {
-    if (!onboarding && !readSettings().onboarded) {
-      router.replace('/onboarding');
+    if (onboarding) {
+      setReady(true);
       return;
     }
-    setReady(true);
+    canUseApp().then((ok) => {
+      if (ok) setReady(true);
+      else router.replace('/onboarding');
+    });
   }, [onboarding, router]);
 
   if (!ready) return null;

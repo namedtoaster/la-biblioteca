@@ -13,7 +13,7 @@ export function AccountCard() {
   const signOut = async () => {
     await supabase()?.auth.signOut();
     // Back to the welcome screen. Your clips stay on this device, hidden until you sign back in.
-    writeSettings({ onboarded: false });
+    writeSettings({ onboarded: false, skippedHola: false });
     router.replace('/onboarding');
   };
   if (!accountsEnabled() || user === undefined) return null;

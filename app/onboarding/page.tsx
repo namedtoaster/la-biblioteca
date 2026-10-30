@@ -2,11 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Recorder } from '@/components/Recorder';
 import { SignInForm } from '@/components/SignInForm';
-import { dayKey } from '@/lib/days';
-import { readSettings, saveClip, writeSettings, type Settings } from '@/lib/store';
-import { accountsEnabled, supabase } from '@/lib/supabase';
+import { canUseApp } from '@/lib/access';
+import { writeSettings, type Settings } from '@/lib/store';
+import { accountsEnabled } from '@/lib/supabase';
 
 const STEPS = 4;
 
@@ -23,34 +22,24 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [returning, setReturning] = useState(false);
   const [levelChoice, setLevelChoice] = useState<number | null>(null);
-  const [spoke, setSpoke] = useState(false);
   const [adult, setAdult] = useState(false);
   const [needAdult, setNeedAdult] = useState(false);
 
-  // Anyone already set up or signed in (say, by a link opened in another tab) skips onboarding.
+  // Anyone who can already use the app (say, signed in by a link in another tab) skips this.
   useEffect(() => {
-    if (readSettings().onboarded) {
-      router.replace('/');
-      return;
-    }
-    supabase()?.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        writeSettings({ onboarded: true, adult: true });
-        router.replace('/');
-      }
-    });
+    canUseApp().then((ok) => ok && router.replace('/'));
   }, [router]);
 
   const next = () => setStep((s) => Math.min(STEPS, s + 1));
   const level = LEVELS[levelChoice ?? 0].level;
 
-  const finish = () => {
+  const confirmAdult = () => {
     if (!adult) {
       setNeedAdult(true);
-      return;
+      return false;
     }
     writeSettings({ onboarded: true, adult: true, level });
-    router.replace('/');
+    return true;
   };
 
   if (returning) {
@@ -96,32 +85,13 @@ export default function OnboardingPage() {
 
       {step === 1 && (
         <div className="step">
-          <div className="stack tight">
-            <h1 className="hero" lang="es">¿Hablamos?</h1>
-            <p className="lead">Let&apos;s talk. Tap the mic and say <span lang="es">&quot;hola&quot;</span>.</p>
-          </div>
           <div className="grow center-y stack">
-            {spoke ? (
-              <div className="note good">
-                <strong>You just spoke Spanish.</strong>
-                <span>That&apos;s the whole idea: a little bit out loud, whenever you&apos;re ready. We kept this clip so you can hear how far you come.</span>
-              </div>
-            ) : (
-              <Recorder
-                idleHint="Your browser will ask to use the microphone. Only you will hear this."
-                saveLabel="Keep it"
-                onSave={async (take) => {
-                  await saveClip({ kind: 'first', day: dayKey(), questionId: null, durationMs: take.durationMs, audio: take.blob });
-                  setSpoke(true);
-                }}
-              />
-            )}
+            <h1 className="hero" lang="es">¿Hablamos?</h1>
+            <p className="lead">Let&apos;s talk. One question a day, answered out loud, at your own pace.</p>
           </div>
           <div className="stack tight">
-            <button className={spoke ? 'button primary big' : 'button ghost'} onClick={next}>
-              {spoke ? 'Continue' : 'Not right now'}
-            </button>
-            {accountsEnabled() && !spoke && (
+            <button className="button primary big" onClick={next}>Start</button>
+            {accountsEnabled() && (
               <button className="button ghost" onClick={() => setReturning(true)}>
                 I already have an account
               </button>
@@ -180,32 +150,25 @@ export default function OnboardingPage() {
 
       {step === 4 && (
         <div className="step">
-          <h1 className="title">One last thing</h1>
+          <h1 className="title">{accountsEnabled() ? 'Make your account' : 'One last thing'}</h1>
           <label className="check">
             <input type="checkbox" checked={adult} onChange={(e) => { setAdult(e.target.checked); setNeedAdult(false); }} />
             I&apos;m 18 or older
           </label>
           {needAdult && <p className="warn" role="alert">Please confirm you&apos;re 18 or older.</p>}
-          <div className="grow stack">
-            {accountsEnabled() ? (
-              <>
-                <p className="muted">Sign in to keep your place when posting arrives. Your clips stay on this device either way.</p>
-                <SignInForm
-                  onSignedIn={() => router.replace('/')}
-                  canSend={() => {
-                    if (!adult) setNeedAdult(true);
-                    else writeSettings({ onboarded: true, adult: true, level });
-                    return adult;
-                  }}
-                />
-              </>
-            ) : (
-              <p className="muted">Your clips stay only on this device. Nobody else can hear them.</p>
-            )}
-          </div>
-          <button className={accountsEnabled() ? 'button ghost' : 'button primary big'} onClick={finish}>
-            {accountsEnabled() ? 'Skip for now and start' : 'Start'}
-          </button>
+          {accountsEnabled() ? (
+            <div className="grow stack">
+              <p className="muted">No password. We email you a code each time you sign in.</p>
+              <SignInForm onSignedIn={() => router.replace('/')} canSend={confirmAdult} />
+            </div>
+          ) : (
+            <>
+              <p className="muted grow">Your clips stay only on this device. Nobody else can hear them.</p>
+              <button className="button primary big" onClick={() => confirmAdult() && router.replace('/')}>
+                Start
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

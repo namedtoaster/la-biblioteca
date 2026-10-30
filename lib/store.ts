@@ -64,6 +64,8 @@ export type Settings = {
   onboarded: boolean;
   level: 1 | 2 | 3;
   adult: boolean;
+  /** The first-clip prompt on Hoy was done or skipped. */
+  skippedHola?: boolean;
 };
 
 const SETTINGS_KEY = 'la-biblioteca:settings';

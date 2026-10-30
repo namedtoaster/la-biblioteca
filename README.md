@@ -8,7 +8,7 @@ Built for people who know lots of words but freeze when they have to speak. Low 
 
 Version 0.1, an early working slice:
 
-- Onboarding that starts by speaking: say hola, then a few quick questions.
+- A short welcome, a few quick questions, then an account by email code (no passwords). Your first clip is a simple "hola".
 - One question a day, the same for everyone on the same local date. A new day starts at 4am, so late nights still count.
 - Record, listen back, try again as many times as you like.
 - A private journal of your answers. Every older question stays open.
@@ -30,6 +30,8 @@ npm run dev
 ```
 
 Then open http://localhost:3000. Recording needs a browser with microphone access (Chrome, Safari or Firefox), on `localhost` or HTTPS.
+
+Without any setup the app runs with no accounts and keeps everything in your browser. To try accounts, copy `.env.example` to `.env.local` and fill in your own Supabase project's URL and publishable key; then signing in is required to record.
 
 Before sending changes:
 
