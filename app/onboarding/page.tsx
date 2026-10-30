@@ -1,12 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Recorder } from '@/components/Recorder';
 import { SignInForm } from '@/components/SignInForm';
 import { dayKey } from '@/lib/days';
-import { saveClip, writeSettings, type Settings } from '@/lib/store';
-import { accountsEnabled } from '@/lib/supabase';
+import { readSettings, saveClip, writeSettings, type Settings } from '@/lib/store';
+import { accountsEnabled, supabase } from '@/lib/supabase';
 
 const STEPS = 4;
 
@@ -26,6 +26,20 @@ export default function OnboardingPage() {
   const [spoke, setSpoke] = useState(false);
   const [adult, setAdult] = useState(false);
   const [needAdult, setNeedAdult] = useState(false);
+
+  // Anyone already set up or signed in (say, by a link opened in another tab) skips onboarding.
+  useEffect(() => {
+    if (readSettings().onboarded) {
+      router.replace('/');
+      return;
+    }
+    supabase()?.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        writeSettings({ onboarded: true, adult: true });
+        router.replace('/');
+      }
+    });
+  }, [router]);
 
   const next = () => setStep((s) => Math.min(STEPS, s + 1));
   const level = LEVELS[levelChoice ?? 0].level;

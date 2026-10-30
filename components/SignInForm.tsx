@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { sendSignInLink, verifyCode } from '@/lib/supabase';
+import { useEffect, useState } from 'react';
+import { sendSignInLink, supabase, verifyCode } from '@/lib/supabase';
 
 type Props = {
   canSend?: () => boolean;
@@ -17,6 +17,20 @@ export function SignInForm({ canSend = () => true, onSignedIn, existingOnly = fa
   const [showCode, setShowCode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // While waiting, a link opened in another tab signs this one in too, so move on by ourselves.
+  useEffect(() => {
+    if (step !== 'code') return;
+    const sb = supabase();
+    if (!sb) return;
+    const { data } = sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setStep('done');
+        onSignedIn?.();
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, [step, onSignedIn]);
 
   const send = async () => {
     setBusy(true);
