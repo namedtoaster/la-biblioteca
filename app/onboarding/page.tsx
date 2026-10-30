@@ -138,6 +138,7 @@ export default function OnboardingPage() {
               <>
                 <p className="muted">Sign in to keep your place when posting arrives. Your clips stay on this device either way.</p>
                 <SignInForm
+                  onSignedIn={() => router.replace('/')}
                   canSend={() => {
                     if (!adult) setNeedAdult(true);
                     else writeSettings({ onboarded: true, adult: true, level: LEVELS[levelChoice].level });

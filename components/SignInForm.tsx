@@ -1,39 +1,93 @@
 'use client';
 
 import { useState } from 'react';
-import { sendSignInLink } from '@/lib/supabase';
+import { sendSignInLink, verifyCode } from '@/lib/supabase';
 
-type Props = { canSend?: () => boolean };
+type Props = {
+  canSend?: () => boolean;
+  onSignedIn?: () => void;
+};
 
-export function SignInForm({ canSend = () => true }: Props) {
+export function SignInForm({ canSend = () => true, onSignedIn }: Props) {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [code, setCode] = useState('');
+  const [step, setStep] = useState<'email' | 'code' | 'done'>('email');
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (status === 'sent') {
+  const send = async () => {
+    setBusy(true);
+    setError(null);
+    const problem = await sendSignInLink(email.trim());
+    setBusy(false);
+    if (problem) setError(problem);
+    else setStep('code');
+  };
+
+  if (step === 'done') {
     return (
       <div className="note good" role="status">
-        <strong>Check your email</strong>
-        <span>We sent a sign-in link to {email}. Open it in this same browser.</span>
+        <strong>You&apos;re signed in</strong>
+        <span>as {email}</span>
       </div>
+    );
+  }
+
+  if (step === 'code') {
+    return (
+      <form
+        className="stack"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setBusy(true);
+          setError(null);
+          const problem = await verifyCode(email.trim(), code.trim());
+          setBusy(false);
+          if (problem) {
+            setError(problem);
+          } else {
+            setStep('done');
+            onSignedIn?.();
+          }
+        }}
+      >
+        <div className="note" role="status">
+          <strong>Check your email</strong>
+          <span>We sent a code to {email}. Type it here, or tap the link in the email.</span>
+        </div>
+        <label className="field">
+          <span>Code from the email</span>
+          <input
+            required
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]{6,10}"
+            maxLength={10}
+            placeholder="123456"
+          />
+        </label>
+        {error && <p className="warn" role="alert">{error}</p>}
+        <button className="button primary big" type="submit" disabled={busy}>
+          {busy ? 'Checking...' : 'Sign in'}
+        </button>
+        <button className="link" type="button" disabled={busy} onClick={send}>
+          Send a new code
+        </button>
+        <button className="link back" type="button" onClick={() => { setStep('email'); setCode(''); setError(null); }}>
+          Use a different email
+        </button>
+      </form>
     );
   }
 
   return (
     <form
       className="stack"
-      onSubmit={async (event) => {
+      onSubmit={(event) => {
         event.preventDefault();
-        if (!canSend()) return;
-        setStatus('sending');
-        setError(null);
-        const problem = await sendSignInLink(email.trim());
-        if (problem) {
-          setError(problem);
-          setStatus('idle');
-        } else {
-          setStatus('sent');
-        }
+        if (canSend()) send();
       }}
     >
       <label className="field">
@@ -49,8 +103,8 @@ export function SignInForm({ canSend = () => true }: Props) {
         />
       </label>
       {error && <p className="warn" role="alert">{error}</p>}
-      <button className="button primary big" type="submit" disabled={status === 'sending'}>
-        {status === 'sending' ? 'Sending...' : 'Email me a sign-in link'}
+      <button className="button primary big" type="submit" disabled={busy}>
+        {busy ? 'Sending...' : 'Email me a sign-in code'}
       </button>
     </form>
   );
