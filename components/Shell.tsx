@@ -15,7 +15,8 @@ const TABS = [
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const onboarding = pathname === '/onboarding';
+  // Onboarding and the sign-in return page render bare, without the onboarding redirect.
+  const onboarding = pathname === '/onboarding' || pathname.startsWith('/auth/');
   const [ready, setReady] = useState(onboarding);
 
   useEffect(() => {

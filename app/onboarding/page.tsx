@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { MicIcon } from '@/components/Icons';
 import { Recorder } from '@/components/Recorder';
+import { SignInForm } from '@/components/SignInForm';
 import { dayKey } from '@/lib/days';
 import { saveClip, writeSettings, type Settings } from '@/lib/store';
+import { accountsEnabled } from '@/lib/supabase';
 
 const STEPS = 5;
 
@@ -126,13 +128,31 @@ export default function OnboardingPage() {
       {step === 5 && (
         <div className="step">
           <h1 className="title">One last thing</h1>
-          <p className="muted">For now your clips stay only on this device. Nobody else can hear them. Accounts are coming soon.</p>
-          <label className="check grow">
+          <label className="check">
             <input type="checkbox" checked={adult} onChange={(e) => { setAdult(e.target.checked); setNeedAdult(false); }} />
             I&apos;m 18 or older
           </label>
-          {needAdult && <p className="warn center" role="alert">Please confirm you&apos;re 18 or older.</p>}
-          <button className="button primary big" onClick={finish}>Start speaking</button>
+          {needAdult && <p className="warn" role="alert">Please confirm you&apos;re 18 or older.</p>}
+          <div className="grow stack">
+            {accountsEnabled() && (
+              <>
+                <p className="muted">Sign in to keep your place when posting arrives. Your clips stay on this device either way.</p>
+                <SignInForm
+                  canSend={() => {
+                    if (!adult) setNeedAdult(true);
+                    else writeSettings({ onboarded: true, adult: true, level: LEVELS[levelChoice].level });
+                    return adult;
+                  }}
+                />
+              </>
+            )}
+            {!accountsEnabled() && (
+              <p className="muted">Your clips stay only on this device. Nobody else can hear them.</p>
+            )}
+          </div>
+          <button className={accountsEnabled() ? 'button ghost' : 'button primary big'} onClick={finish}>
+            {accountsEnabled() ? 'Skip for now and start speaking' : 'Start speaking'}
+          </button>
         </div>
       )}
     </div>

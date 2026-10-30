@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { AccountCard } from '@/components/AccountCard';
 import { ClipPlayer, formatDuration } from '@/components/ClipPlayer';
 import { formatDay, weeksShowedUp } from '@/lib/days';
 import { type Clip, deleteClip, listClips } from '@/lib/store';
@@ -75,6 +76,7 @@ export default function ProgressPage() {
         </details>
       )}
       <p className="muted small">Your clips are stored only in this browser. Clearing site data deletes them.</p>
+      <AccountCard />
     </div>
   );
 }
