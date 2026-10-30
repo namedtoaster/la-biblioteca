@@ -19,7 +19,11 @@ Open an issue with your question, or add it to `lib/questions.ts` in a pull requ
 3. Run `npm run check`. It type checks, runs the tests, and fails on long dashes (em or en), which this project does not use anywhere.
 4. Open a pull request saying what changed and why.
 
-Before a first pull request is merged, contributors will be asked to agree to a contributor license agreement, so the project can keep its licensing options open. It is being set up.
+## Contributor agreement
+
+Before your first pull request can be merged, you sign the [Contributor License Agreement](CLA.md). A bot comments on your pull request and asks you to reply with one sentence. You only do this once.
+
+In short: you keep the copyright in your work, and you let the project use it under any license, including commercial ones. In return, the project promises that everything you contribute stays available under an open source license. That way the project can keep its options open to fund itself, and your work can never be locked away.
 
 ## Safety and privacy
 

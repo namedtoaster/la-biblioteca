@@ -43,4 +43,4 @@ The code is licensed under the [GNU AGPL 3.0](LICENSE). If you run a modified ve
 
 The question text in `lib/questions.ts` is licensed [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), so it can be reused and translated.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to help.
+Contributors sign a short [Contributor License Agreement](CLA.md): you keep your copyright, and everything you contribute stays available as open source. See [CONTRIBUTING.md](CONTRIBUTING.md) to help.
