@@ -8,7 +8,7 @@ Built for people who know lots of words but freeze when they have to speak. Low 
 
 Version 0.1, an early working slice:
 
-- Onboarding: pick your level, record your first clip.
+- Onboarding that starts by speaking: say hola, then a few quick questions.
 - One question a day, the same for everyone on the same local date. A new day starts at 4am, so late nights still count.
 - Record, listen back, try again as many times as you like.
 - A private journal of your answers. Every older question stays open.

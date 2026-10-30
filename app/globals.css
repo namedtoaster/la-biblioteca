@@ -242,8 +242,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .step { flex: 1; display: flex; flex-direction: column; gap: 16px; }
 
 .progress-row { display: flex; align-items: center; gap: 12px; min-height: 44px; }
-.progress { flex: 1; height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
-.progress > div { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.2s; }
 
 .icon-button {
   width: 44px;
@@ -254,16 +252,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
   font-size: 22px;
 }
 
-.badge {
-  width: 88px;
-  height: 88px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
 .choice {
   display: flex;
@@ -281,14 +269,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 .choice[aria-checked='true'] { background: var(--accent-soft); border-color: var(--accent); }
 
-.bars { display: flex; align-items: flex-end; gap: 3px; height: 21px; }
-.bars span { width: 5px; border-radius: 2px; background: var(--line-2); }
-.bars span.on { background: var(--accent); }
 
-.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 18px; }
-.steps li { padding-left: 6px; }
-.steps strong { display: block; }
-.steps span { color: var(--ink-2); font-size: 14px; }
 
 .check { display: flex; align-items: flex-start; gap: 12px; min-height: 44px; font-size: 16px; }
 .check input { width: 22px; height: 22px; accent-color: var(--accent); }
@@ -308,3 +289,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
   padding: 0 14px;
 }
 .button:disabled { opacity: 0.6; cursor: default; }
+
+.icon-spacer { width: 44px; height: 44px; }
+.dots { flex: 1; display: flex; justify-content: center; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.dots li { width: 8px; height: 8px; border-radius: 999px; background: var(--line-2); }
+.dots li.on { background: var(--accent); }
+
+.deal { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.deal li { display: flex; flex-direction: column; gap: 2px; }
+.deal span { color: var(--ink-2); font-size: 14px; }

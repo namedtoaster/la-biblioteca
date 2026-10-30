@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ChartIcon, ListIcon, MicIcon } from './Icons';
+import { APP_NAME } from '@/lib/brand';
 import { readSettings } from '@/lib/store';
 
 const TABS = [
@@ -33,7 +34,7 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="brand">La Biblioteca</span>
+        <span className="brand">{APP_NAME}</span>
         <span className="muted small">Spanish</span>
       </header>
       <main className="content">{children}</main>

@@ -2,39 +2,40 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { MicIcon } from '@/components/Icons';
 import { Recorder } from '@/components/Recorder';
 import { SignInForm } from '@/components/SignInForm';
 import { dayKey } from '@/lib/days';
 import { saveClip, writeSettings, type Settings } from '@/lib/store';
 import { accountsEnabled } from '@/lib/supabase';
 
-const STEPS = 5;
+const STEPS = 4;
 
+// Asked as a situation, not a test, so nobody has to rate themselves.
 const LEVELS: { label: string; level: Settings['level'] }[] = [
-  { label: "I'm brand new to Spanish", level: 1 },
-  { label: 'I know lots of words but freeze when I speak', level: 1 },
-  { label: 'I can have simple conversations', level: 2 },
-  { label: 'I can talk about most things', level: 3 },
+  { label: '...smile and nod', level: 1 },
+  { label: '...catch a few words', level: 1 },
+  { label: "...understand, but freeze when it's my turn", level: 2 },
+  { label: '...answer back', level: 3 },
 ];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [returning, setReturning] = useState(false);
-  const [levelChoice, setLevelChoice] = useState(1);
-  const [firstSaved, setFirstSaved] = useState(false);
+  const [levelChoice, setLevelChoice] = useState<number | null>(null);
+  const [spoke, setSpoke] = useState(false);
   const [adult, setAdult] = useState(false);
   const [needAdult, setNeedAdult] = useState(false);
 
   const next = () => setStep((s) => Math.min(STEPS, s + 1));
+  const level = LEVELS[levelChoice ?? 0].level;
 
   const finish = () => {
     if (!adult) {
       setNeedAdult(true);
       return;
     }
-    writeSettings({ onboarded: true, adult: true, level: LEVELS[levelChoice].level });
+    writeSettings({ onboarded: true, adult: true, level });
     router.replace('/');
   };
 
@@ -64,26 +65,49 @@ export default function OnboardingPage() {
   return (
     <div className="onboarding">
       <div className="progress-row">
-        {step > 1 && (
+        {step > 1 ? (
           <button className="icon-button" onClick={() => setStep(step - 1)} aria-label="Back">
             ←
           </button>
+        ) : (
+          <span className="icon-spacer" />
         )}
-        <div className="progress" role="progressbar" aria-valuemin={1} aria-valuemax={STEPS} aria-valuenow={step} aria-label="Setup progress">
-          <div style={{ width: `${(step / STEPS) * 100}%` }} />
-        </div>
+        <ol className="dots" aria-label={`Step ${step} of ${STEPS}`}>
+          {Array.from({ length: STEPS }, (_, i) => (
+            <li key={i} className={i < step ? 'on' : ''} />
+          ))}
+        </ol>
+        <span className="icon-spacer" />
       </div>
 
       {step === 1 && (
         <div className="step">
+          <div className="stack tight">
+            <h1 className="hero" lang="es">¿Hablamos?</h1>
+            <p className="lead">Let&apos;s talk. Tap the mic and say <span lang="es">&quot;hola&quot;</span>.</p>
+          </div>
           <div className="grow center-y stack">
-            <div className="badge"><MicIcon size={40} /></div>
-            <h1 className="hero">Speak Spanish out loud.</h1>
-            <p className="lead">One question a day. Answer it by voice. Nobody hears you until you&apos;re ready.</p>
+            {spoke ? (
+              <div className="note good">
+                <strong>You just spoke Spanish.</strong>
+                <span>That&apos;s the whole idea: a little bit out loud, whenever you&apos;re ready. We kept this clip so you can hear how far you come.</span>
+              </div>
+            ) : (
+              <Recorder
+                idleHint="Your browser will ask to use the microphone. Only you will hear this."
+                saveLabel="Keep it"
+                onSave={async (take) => {
+                  await saveClip({ kind: 'first', day: dayKey(), questionId: null, durationMs: take.durationMs, audio: take.blob });
+                  setSpoke(true);
+                }}
+              />
+            )}
           </div>
           <div className="stack tight">
-            <button className="button primary big" onClick={next}>Start</button>
-            {accountsEnabled() && (
+            <button className={spoke ? 'button primary big' : 'button ghost'} onClick={next}>
+              {spoke ? 'Continue' : 'Not right now'}
+            </button>
+            {accountsEnabled() && !spoke && (
               <button className="button ghost" onClick={() => setReturning(true)}>
                 I already have an account
               </button>
@@ -94,8 +118,8 @@ export default function OnboardingPage() {
 
       {step === 2 && (
         <div className="step">
-          <h1 className="title">How much Spanish do you know?</h1>
-          <div className="stack grow" role="radiogroup" aria-label="Your level">
+          <h1 className="title">When someone speaks Spanish to you, you...</h1>
+          <div className="stack grow" role="radiogroup" aria-label="When someone speaks Spanish to you">
             {LEVELS.map((option, i) => (
               <button
                 key={option.label}
@@ -104,59 +128,43 @@ export default function OnboardingPage() {
                 className="choice"
                 onClick={() => setLevelChoice(i)}
               >
-                <span className="bars" aria-hidden="true">
-                  {[0, 1, 2, 3].map((b) => (
-                    <span key={b} className={b <= i ? 'on' : ''} style={{ height: 6 + b * 5 }} />
-                  ))}
-                </span>
                 {option.label}
               </button>
             ))}
+            <p className="muted small">No wrong answer. It only sets how hard the questions start.</p>
           </div>
-          <button className="button primary big" onClick={next}>Continue</button>
+          <button className="button primary big" onClick={next} disabled={levelChoice === null}>
+            Continue
+          </button>
         </div>
       )}
 
       {step === 3 && (
         <div className="step">
-          <h1 className="title">Try it. Say hola and your name.</h1>
-          <p className="muted" lang="es">&quot;Hola, me llamo...&quot; This one is just for you.</p>
-          <div className="grow">
-            {firstSaved ? (
-              <div className="note good">
-                <strong>That&apos;s it. That&apos;s the whole app.</strong>
-                <span>We kept this as your first clip, so you can hear how far you&apos;ve come.</span>
-              </div>
-            ) : (
-              <Recorder
-                idleHint="Your browser will ask to use the microphone."
-                saveLabel="Keep it"
-                onSave={async (take) => {
-                  await saveClip({ kind: 'first', day: dayKey(), questionId: null, durationMs: take.durationMs, audio: take.blob });
-                  setFirstSaved(true);
-                }}
-              />
-            )}
-          </div>
-          <button className={firstSaved ? 'button primary big' : 'button ghost'} onClick={next}>
-            {firstSaved ? 'Continue' : 'Skip for now'}
-          </button>
+          <h1 className="title">Here&apos;s the deal</h1>
+          <ul className="deal grow">
+            <li>
+              <strong>One question a day.</strong>
+              <span>About your life, so there&apos;s no wrong answer. It changes every morning.</span>
+            </li>
+            <li>
+              <strong>Answer out loud, as many tries as you want.</strong>
+              <span>Nobody hears a take you don&apos;t keep.</span>
+            </li>
+            <li>
+              <strong>No streaks, no hearts, no guilt.</strong>
+              <span>Miss a week and nothing is lost. Come back whenever.</span>
+            </li>
+            <li>
+              <strong>Soon: real people answer you.</strong>
+              <span>By voice, never live. Every clip is checked first, and one tap blocks anyone.</span>
+            </li>
+          </ul>
+          <button className="button primary big" onClick={next}>Sounds good</button>
         </div>
       )}
 
       {step === 4 && (
-        <div className="step">
-          <h1 className="title">How it works</h1>
-          <ol className="steps grow">
-            <li><strong>Answer the day&apos;s question</strong><span>A new one every morning. Practice as many times as you want.</span></li>
-            <li><strong>Listen back</strong><span>Your answers are saved, so you can hear yourself improve.</span></li>
-            <li><strong>Soon: real people answer you</strong><span>By voice, never live. Every clip is checked first, and one tap blocks anyone.</span></li>
-          </ol>
-          <button className="button primary big" onClick={next}>Got it</button>
-        </div>
-      )}
-
-      {step === 5 && (
         <div className="step">
           <h1 className="title">One last thing</h1>
           <label className="check">
@@ -165,25 +173,24 @@ export default function OnboardingPage() {
           </label>
           {needAdult && <p className="warn" role="alert">Please confirm you&apos;re 18 or older.</p>}
           <div className="grow stack">
-            {accountsEnabled() && (
+            {accountsEnabled() ? (
               <>
                 <p className="muted">Sign in to keep your place when posting arrives. Your clips stay on this device either way.</p>
                 <SignInForm
                   onSignedIn={() => router.replace('/')}
                   canSend={() => {
                     if (!adult) setNeedAdult(true);
-                    else writeSettings({ onboarded: true, adult: true, level: LEVELS[levelChoice].level });
+                    else writeSettings({ onboarded: true, adult: true, level });
                     return adult;
                   }}
                 />
               </>
-            )}
-            {!accountsEnabled() && (
+            ) : (
               <p className="muted">Your clips stay only on this device. Nobody else can hear them.</p>
             )}
           </div>
           <button className={accountsEnabled() ? 'button ghost' : 'button primary big'} onClick={finish}>
-            {accountsEnabled() ? 'Skip for now and start speaking' : 'Start speaking'}
+            {accountsEnabled() ? 'Skip for now and start' : 'Start'}
           </button>
         </div>
       )}
