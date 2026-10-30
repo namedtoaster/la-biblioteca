@@ -31,7 +31,9 @@ npm run dev
 
 Then open http://localhost:3000. Recording needs a browser with microphone access (Chrome, Safari or Firefox), on `localhost` or HTTPS.
 
-Without any setup the app runs with no accounts and keeps everything in your browser. To try accounts, copy `.env.example` to `.env.local` and fill in your own Supabase project's URL and publishable key; then signing in is required to record.
+Without any setup the app runs with no accounts and keeps everything in your browser.
+
+Practice groups need a Supabase project: run `supabase/migrations/0001_groups.sql` in its SQL editor. `npm run test:db` runs the database tests on a throwaway local PostgreSQL (version 15 or newer). To try accounts, copy `.env.example` to `.env.local` and fill in your own Supabase project's URL and publishable key; then signing in is required to record.
 
 Before sending changes:
 

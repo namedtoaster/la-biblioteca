@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { ClipPlayer, formatDuration } from './ClipPlayer';
 import { MicIcon, StopIcon } from './Icons';
 import { MAX_SECONDS, type Take, useRecorder } from '@/lib/useRecorder';
@@ -8,12 +9,30 @@ type Props = {
   idleHint: string;
   saveLabel: string;
   onSave: (take: Take) => void | Promise<void>;
+  /** A second way to keep a finished take, shown under the main button. */
+  altSaveLabel?: string;
+  onAltSave?: (take: Take) => void | Promise<void>;
   secondaryLabel?: string;
   onSecondary?: () => void;
 };
 
-export function Recorder({ idleHint, saveLabel, onSave, secondaryLabel, onSecondary }: Props) {
+export function Recorder({ idleHint, saveLabel, onSave, altSaveLabel, onAltSave, secondaryLabel, onSecondary }: Props) {
   const { state, take, takes, seconds, start, stop, reset } = useRecorder();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const keep = async (fn: (take: Take) => void | Promise<void>) => {
+    if (!take) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await fn(take);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="stack">
@@ -59,9 +78,17 @@ export function Recorder({ idleHint, saveLabel, onSave, secondaryLabel, onSecond
         )}
       </div>
       {state === 'done' && take && (
-        <button className="button primary" onClick={() => onSave(take)}>
-          {saveLabel}
-        </button>
+        <>
+          {error && <p className="warn" role="alert">{error}</p>}
+          <button className="button primary" disabled={busy} onClick={() => keep(onSave)}>
+            {busy ? 'Saving...' : saveLabel}
+          </button>
+          {altSaveLabel && onAltSave && (
+            <button className="button secondary" disabled={busy} onClick={() => keep(onAltSave)}>
+              {altSaveLabel}
+            </button>
+          )}
+        </>
       )}
       {secondaryLabel && onSecondary && state !== 'recording' && (
         <button className="button ghost" onClick={onSecondary}>

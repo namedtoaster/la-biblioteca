@@ -9,7 +9,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check": "node scripts/check.mjs && tsc --noEmit && vitest run"
+    "check": "node scripts/check.mjs && tsc --noEmit && vitest run",
+    "test:db": "bash scripts/test-db.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

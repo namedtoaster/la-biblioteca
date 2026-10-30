@@ -8,13 +8,16 @@ export function formatDuration(ms: number): string {
 }
 
 type Props = {
-  audio: Blob;
+  /** A clip on this device, or... */
+  audio?: Blob;
+  /** ...a link to a clip stored online. */
+  src?: string;
   /** Length measured while recording. Browser recordings often carry no duration of their own. */
   durationMs: number;
   label: string;
 };
 
-export function ClipPlayer({ audio, durationMs, label }: Props) {
+export function ClipPlayer({ audio, src, durationMs, label }: Props) {
   const el = useRef<HTMLAudioElement>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -22,10 +25,14 @@ export function ClipPlayer({ audio, durationMs, label }: Props) {
   const [length, setLength] = useState(durationMs / 1000);
 
   useEffect(() => {
+    if (!audio) {
+      setUrl(src ?? null);
+      return;
+    }
     const objectUrl = URL.createObjectURL(audio);
     setUrl(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
-  }, [audio]);
+  }, [audio, src]);
 
   useEffect(() => {
     const a = el.current;

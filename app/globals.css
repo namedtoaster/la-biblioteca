@@ -78,7 +78,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
   max-width: 480px;
   height: 76px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   background: var(--bg);
   border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
@@ -338,3 +339,81 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .deal li { display: flex; flex-direction: column; gap: 2px; }
 .deal span { color: var(--ink-2); font-size: 14px; }
 .field .small { font-weight: 400; }
+
+/* Groups */
+.group-card { background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 18px; }
+.days { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.days li { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; background: var(--surface); color: var(--muted); }
+.days li.past { background: var(--accent-soft); color: var(--accent); }
+.days li.now { background: var(--accent); color: #fff; font-weight: 700; }
+.members { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.members li { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.avatar {
+  width: 36px; height: 36px; flex-shrink: 0; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+}
+.small-avatar { width: 28px; height: 28px; font-size: 11px; }
+.done { display: inline-flex; align-items: center; gap: 4px; }
+
+.answer { border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+.answer-head { display: flex; align-items: center; gap: 10px; }
+.replies { list-style: none; margin: 4px 0 0; padding: 0 0 0 16px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.reply-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
+.reply-row { display: flex; align-items: center; gap: 6px; }
+.rec-pill {
+  display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; border-radius: 999px;
+  background: var(--live); color: #fff; font-size: 14px; font-weight: 600;
+}
+.rec-pill .time { color: #fff; }
+.rec-dot { width: 10px; height: 10px; border-radius: 999px; background: #fff; animation: pulse 1s infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .rec-dot { animation: none; } }
+.icon-button.live { color: #fff; }
+.choice.column { flex-direction: column; align-items: flex-start; gap: 2px; }
+
+.sheet-backdrop {
+  position: fixed; inset: 0; z-index: 20; background: rgba(10, 15, 20, 0.5);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.sheet {
+  width: 100%; max-width: 480px; max-height: 90dvh; overflow-y: auto;
+  background: var(--bg); border-radius: 22px 22px 0 0; padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
+}
+@media (min-width: 900px) {
+  .sheet-backdrop { align-items: center; }
+  .sheet { border-radius: 22px; }
+}
+
+/* Layout: phone first, sidebar and rail on wider screens */
+.sidebar, .rail { display: none; }
+
+@media (min-width: 900px) {
+  body { background: var(--bg); }
+  .app {
+    max-width: none;
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: start;
+  }
+  .topbar, .tabbar { display: none; }
+  .sidebar {
+    display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 0; height: 100dvh;
+    padding: 24px 16px; border-right: 1px solid var(--line);
+  }
+  .sidebar .brand { padding: 0 12px; }
+  .sidebar > .muted { padding: 0 12px 16px; }
+  .sidenav { display: flex; flex-direction: column; gap: 2px; }
+  .sidenav .tab {
+    flex-direction: row; justify-content: flex-start; gap: 12px;
+    font-size: 15px; padding: 10px 12px; border-radius: 12px; min-height: 44px;
+  }
+  .sidenav .tab[aria-current='page'] { background: var(--accent-soft); }
+  .content { width: 100%; max-width: 640px; justify-self: center; padding: 40px 32px 64px; }
+}
+
+@media (min-width: 1200px) {
+  .app { grid-template-columns: 240px minmax(0, 1fr) 340px; }
+  .rail { display: block; position: sticky; top: 0; padding: 40px 32px 40px 0; }
+}
